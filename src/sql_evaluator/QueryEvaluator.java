@@ -24,7 +24,7 @@ public class QueryEvaluator {
 
   // Mapping of table name, as possibly aliased, to the corresponding table.
   private final Map<String, Table> table_name_map_;
-  // Mapping of column name to corresponding potentially multiple tables.
+  // Mapping of non-aliased column name to corresponding potentially multiple tables.
   private final Map<String, List<String>> column_table_map_ = new HashMap<>();
 
   // Map aliased table name to the base index in the cross-product table.
@@ -212,9 +212,6 @@ public class QueryEvaluator {
     // to multiply with C and so on.
     // "prev_rows" stores the result so far and "curr_table" is the table to be multiplied
     // with prev_rows.
-    // TODO: Following could be optimized in terms of memory by reusing the prev_rows instead
-    // of discarding the intermediate result. Need to be careful with not using the number
-    // of rows as the cross-product is being computed.
     for (Entry<String, Table> name_table : table_name_map_.entrySet()) {
       String table_name = name_table.getKey();
       Table curr_table = name_table.getValue();
@@ -233,10 +230,12 @@ public class QueryEvaluator {
           cross_rows.add(cross_row);
         }
       }
+      // Discarding the previous intermediate result.
       prev_rows = cross_rows;
       table_name_to_idx_.put(table_name, cross_columns_.size());
       cross_columns_.addAll(curr_table.columns);
     }
+
     cross_rows_ = prev_rows;
   }
 
