@@ -32,7 +32,6 @@ public class QueryEvaluator {
   private final ArrayList<ColumnDef> cross_columns_ = new ArrayList<>();
   // Combined cross-product of rows
   private ArrayList<ArrayList<Object>> cross_rows_;
-
   // Filtered rows
   private final ArrayList<ArrayList<Object>> filtered_rows_ = new ArrayList<>();
 

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +31,10 @@ public final class Main {
 
         // Starter code effectively validating the from clause. Only minor updates.
         // Mapping of table name, possibly aliased, to the corresponding table.
-        Map<String, Table> table_name_map = new HashMap<>();
+        // Using 'LinkedHashMap' to preserve the order of tables in the from clause while
+        // computing cross product and also helps map the expected order of tables in
+        // case of errors.
+        Map<String, Table> table_name_map = new LinkedHashMap<>();
         for (TableDecl tableDecl : query.from) {
             String tableSourcePath = tableFolder + File.separator + (tableDecl.source + ".table.json");
             Table table;
