@@ -33,10 +33,16 @@ public class QueryEvaluator {
   // Combined cross-product of rows
   private ArrayList<ArrayList<Object>> cross_rows_;
   // Filtered rows
-  private final ArrayList<ArrayList<Object>> filtered_rows_ = new ArrayList<>();
+  private ArrayList<ArrayList<Object>> filtered_rows_;
 
-  // 'table_name_map' is the map of the table alias name from the "from" clause
-  // to the corresponding Table.
+  /**
+   * QueryEvaluator constructor.
+   *
+   * @param query the query to be evaluated
+   * @param out location to print the output of the query
+   * @param table_name_map map of the table alias name from the "from" clause to the
+   *                       corresponding Table.
+   */
   public QueryEvaluator(Query query, PrintWriter out, Map<String, Table> table_name_map) {
     query_ = query;
     out_ = out;
@@ -53,9 +59,13 @@ public class QueryEvaluator {
     }
   }
 
-  // Evaluates the query and writes output to the supplied out writer returning
-  // whether any errors were encountered. In case of errors, the error is printed
-  // to the supplied output file and simply false is returned by this function.
+  /**
+   * Evaluates the query and writes output to the supplied output writer.
+   * In case of any error, the error is printed to the supplied output file.
+   *
+   * @return  Whether the query evaluation was successful.
+   * @throws IOException
+   */
   public boolean Evaluate() throws IOException {
     if (!ValidateSelectClause()) {
       return false;
@@ -248,18 +258,32 @@ public class QueryEvaluator {
       return l.value;
     } else {
       assert tr.is_column_present;
-      int i = table_name_to_idx_.get(tr.table_name);
-      for (; i < cross_columns_.size(); i++) {
-        if (cross_columns_.get(i).name.equals(tr.col_name)) {
+      int col_idx = table_name_to_idx_.get(tr.table_name);
+      for (; col_idx < cross_columns_.size(); col_idx++) {
+        if (cross_columns_.get(col_idx).name.equals(tr.col_name)) {
           break;
         }
       }
-      return row.get(i);
+      return row.get(col_idx);
     }
   }
 
+  // Apply the where clause to filter rows from the computed cross product.
   private void FilterRows() {
-    // For every cross row iterate over the where clauses to filter out rows
+    // Note: We could remove rows from 'cross_rows_' itself instead of creating
+    //       separate 'filtered_rows' output. However that would require deleting
+    //       element that's not at the start or end. We could potentially use LinkedList
+    //       but then the memory won't be contiguous and may not be efficient in terms
+    //       of memory/cache access.
+    //
+    // Optimization in case there is no where clause.
+    if (query_.where.isEmpty()) {
+      filtered_rows_ = cross_rows_;
+      return;
+    }
+
+    filtered_rows_ = new ArrayList<>();
+    // For every cross row iterate over the where clauses to filter out rows.
     for (ArrayList<Object> row : cross_rows_) {
       boolean include_row = true;
       for (Condition cond : query_.where) {
@@ -336,6 +360,7 @@ public class QueryEvaluator {
     return proj_cols;
   }
 
+  // Return the result table comprising of projected rows from the filtered rows.
   private Table ProjectRows() {
     ArrayList<Integer> col_idxs = new ArrayList<>();
     ArrayList<ColumnDef> proj_cols = GetProjectedColumns(col_idxs);
