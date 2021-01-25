@@ -17,6 +17,8 @@ import sql_evaluator.Term.Literal;
 
 /**
  * Class that evaluates the supplied query and returns the result of projected columns
+ *
+ * Author: Bankim Bhavsar (bankim.bhavsar@gmail.com)
  */
 public class QueryEvaluator {
   private final Query query_;
