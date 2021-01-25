@@ -10,9 +10,8 @@ Hence, chose to implement in Java.
 
 Bulk of the implementation is in the new `QueryEvaluator.java` class.
 It has 2 public function, the constructor and the `Evaluate()` function that works through the
-steps of validating, computing cross product, filtering the rows, and projecting the requested
-columns.
-Minor updates to `Main.java` to invoke the `QueryEvaluator.java` class.
+steps of validating the query, computing cross product, filtering the rows, and projecting the
+requested columns. Minor updates to `Main.java` to invoke the `QueryEvaluator.java` class.
 
 Implementation pre-computes data structures that helps with aliases in "from" clause
 and "select" clause as it's required in a bunch of different places. See the in-line
@@ -20,6 +19,12 @@ comments in the `QueryEvaluator.java` class.
 
 Cross product computation is simplistic O(n1 * n2 * n3 * .. nn) where m and n are number of
 rows in the the tables n1, n2, n3, etc.
+
+As documented in the code, could save on memory by removing rows from `cross_rows` instead
+of populating separate `filtered_rows` in `FilterRows()`.
+One way to do that would be using a remove-efficient data structure like `LinkedList` but that
+would be memory/cache in-efficient. Same applies when projecting columns from `filtered_rows`
+in `ProjectColumns()`.
 
 Compile the Java app using mvn compile
 
